@@ -43,8 +43,19 @@ export function register(config?: Config) {
           );
         });
       } else {
-        // Is not localhost. Just register service worker
-        registerValidSW(swUrl, config);
+        // Non-localhost: preflight check to avoid 404 on hosts without a service worker file
+        fetch(swUrl, { method: 'HEAD' })
+          .then((res) => {
+            const contentType = res.headers.get('content-type') || '';
+            if (res.ok && contentType.indexOf('javascript') !== -1) {
+              registerValidSW(swUrl, config);
+            } else {
+              console.log('[SW] service-worker.js not found on this host. Skipping registration.');
+            }
+          })
+          .catch(() => {
+            console.log('[SW] Preflight for service-worker.js failed. Skipping registration.');
+          });
       }
     });
   }

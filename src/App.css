@@ -63,6 +63,21 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+/* 畳まれた状態ではメインのコントロールを非表示 */
+.header.collapsed .header-controls > *:not(.mobile-only) {
+  display: none;
+}
+.header.collapsed {
+  padding-bottom: 4px;
+}
+
 .header h1 {
   font-size: 1.5rem;
   font-weight: 600;
@@ -388,6 +403,20 @@ body {
   .header h1 {
     font-size: 1rem;
   }
+  .header-controls {
+    gap: 0.5rem;
+    flex-wrap: wrap; /* 2段組に折返し */
+  }
+  .header-controls > * {
+    margin-top: 4px;
+  }
+  .header h1 + .header-controls {
+    margin-left: 8px;
+  }
+  /* 畳み時もモバイル用の小ボタンだけは残す */
+  .header.collapsed .mobile-only {
+    display: flex !important;
+  }
   /* モバイル専用表示 */
   .mobile-only {
     display: flex !important;
@@ -467,7 +496,13 @@ body {
   .canvas-area {
     padding: 6px;
     max-height: none;
-    height: calc(100vh - 110px); /* ヘッダー+ページタブぶんの概算 */
+    height: calc(100svh - 110px); /* モバイルUIを考慮した実効vh */
+  }
+  /* キャンバスが横幅に収まるよう縮小。高さは比率維持 */
+  .canvas-area canvas {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
   }
 
   .control-btn {
@@ -478,6 +513,12 @@ body {
   .theme-toggle {
     padding: 0.3rem;
     font-size: 1rem;
+  }
+
+  /* タブと合わせた高さ最適化。ヘッダー+タブで約72〜90px想定 */
+  .page-manager {
+    padding: 4px 6px !important;
+    min-height: 36px !important;
   }
 }
 

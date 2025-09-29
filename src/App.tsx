@@ -77,6 +77,7 @@ function App() {
   // 📱 モバイル用ドロワー状態
   const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
   const [isRightDrawerOpen, setIsRightDrawerOpen] = useState<boolean>(false);
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(false);
 
   // 🧪 ベータ版フィードバック機能
   const [showFeedbackPanel, setShowFeedbackPanel] = useState<boolean>(false);
@@ -814,11 +815,11 @@ function App() {
   return (
     <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
       {/* ヘッダー */}
-      <header className="header">
+      <header className={`header ${isHeaderCollapsed ? 'collapsed' : ''}`}>
         <h1>📖 AI漫画ネームメーカー</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div className="header-controls">
           {/* 📱 モバイル用ドロワートグル */}
-          <div className="mobile-only" style={{ display: 'none', gap: '0.5rem' }}>
+          <div className="mobile-only">
             <button
               className="control-btn"
               onClick={() => {
@@ -838,6 +839,13 @@ function App() {
               title="右メニューを開く"
             >
               右 ☰
+            </button>
+            <button
+              className="control-btn"
+              onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
+              title={isHeaderCollapsed ? 'ヘッダーを開く' : 'ヘッダーを畳む'}
+            >
+              {isHeaderCollapsed ? '▽ 開く' : '△ 畳む'}
             </button>
           </div>
           <button 
