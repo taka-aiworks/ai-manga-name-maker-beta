@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/ai-manga-name-maker-beta/static/css/main.f434cc29.css",
+    "main.js": "/ai-manga-name-maker-beta/static/js/main.54dfd703.js",
+    "static/js/213.7707dc45.chunk.js": "/ai-manga-name-maker-beta/static/js/213.7707dc45.chunk.js",
+    "static/js/455.166f2497.chunk.js": "/ai-manga-name-maker-beta/static/js/455.166f2497.chunk.js",
+    "static/js/453.f341e9f5.chunk.js": "/ai-manga-name-maker-beta/static/js/453.f341e9f5.chunk.js",
+    "index.html": "/ai-manga-name-maker-beta/index.html",
+    "main.f434cc29.css.map": "/ai-manga-name-maker-beta/static/css/main.f434cc29.css.map",
+    "main.54dfd703.js.map": "/ai-manga-name-maker-beta/static/js/main.54dfd703.js.map",
+    "213.7707dc45.chunk.js.map": "/ai-manga-name-maker-beta/static/js/213.7707dc45.chunk.js.map",
+    "455.166f2497.chunk.js.map": "/ai-manga-name-maker-beta/static/js/455.166f2497.chunk.js.map",
+    "453.f341e9f5.chunk.js.map": "/ai-manga-name-maker-beta/static/js/453.f341e9f5.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f434cc29.css",
+    "static/js/main.54dfd703.js"
+  ]
+}
