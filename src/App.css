@@ -70,6 +70,11 @@ body {
   flex-wrap: nowrap;
 }
 
+/* モバイル専用要素はデフォルト非表示 */
+.mobile-only {
+  display: none;
+}
+
 /* 畳まれた状態ではメインのコントロールを非表示 */
 .header.collapsed .header-controls > *:not(.mobile-only) {
   display: none;
