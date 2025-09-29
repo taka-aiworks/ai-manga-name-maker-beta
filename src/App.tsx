@@ -74,6 +74,9 @@ function App() {
   const [showSnapSettingsPanel, setShowSnapSettingsPanel] = useState<boolean>(false);
   const [canvasSettings, setCanvasSettings] = useState<CanvasSettings>(DEFAULT_CANVAS_SETTINGS);
   const [isPaperSizePanelVisible, setIsPaperSizePanelVisible] = useState(false);
+  // 📱 モバイル用ドロワー状態
+  const [isLeftDrawerOpen, setIsLeftDrawerOpen] = useState<boolean>(false);
+  const [isRightDrawerOpen, setIsRightDrawerOpen] = useState<boolean>(false);
 
   // 🧪 ベータ版フィードバック機能
   const [showFeedbackPanel, setShowFeedbackPanel] = useState<boolean>(false);
@@ -814,6 +817,29 @@ function App() {
       <header className="header">
         <h1>📖 AI漫画ネームメーカー</h1>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          {/* 📱 モバイル用ドロワートグル */}
+          <div className="mobile-only" style={{ display: 'none', gap: '0.5rem' }}>
+            <button
+              className="control-btn"
+              onClick={() => {
+                setIsLeftDrawerOpen(true);
+                setIsRightDrawerOpen(false);
+              }}
+              title="左メニューを開く"
+            >
+              ☰ 左
+            </button>
+            <button
+              className="control-btn"
+              onClick={() => {
+                setIsRightDrawerOpen(true);
+                setIsLeftDrawerOpen(false);
+              }}
+              title="右メニューを開く"
+            >
+              右 ☰
+            </button>
+          </div>
           <button 
             className={`control-btn ${isPanelEditMode ? 'active' : ''}`}
             onClick={() => setIsPanelEditMode(!isPanelEditMode)}
@@ -930,9 +956,17 @@ function App() {
         isDarkMode={isDarkMode}
       />
 
+      {/* 📱 ドロワー用オーバーレイ */}
+      {(isLeftDrawerOpen || isRightDrawerOpen) && (
+        <div
+          className="overlay"
+          onClick={() => { setIsLeftDrawerOpen(false); setIsRightDrawerOpen(false); }}
+        />
+      )}
+
       <div className="main-content">
         {/* 左サイドバー */}
-        <div className="sidebar left-sidebar">
+        <div className={`sidebar left-sidebar drawer ${isLeftDrawerOpen ? 'open' : ''}`}>
           <div className="section">
             <h3>📐 パネルテンプレート</h3>
             <button 
@@ -1087,7 +1121,7 @@ function App() {
         </div>
 
         {/* 右サイドバー */}
-        <div className="sidebar right-sidebar">
+        <div className={`sidebar right-sidebar drawer ${isRightDrawerOpen ? 'open' : ''}`}>
           <div className="section">
             <h3>👥 キャラクター</h3>
             <div className="character-grid">

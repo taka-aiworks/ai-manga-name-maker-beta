@@ -378,14 +378,62 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* ヘッダーをコンパクト＆固定 */
+  .header {
+    padding: 6px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .header h1 {
+    font-size: 1rem;
+  }
+  /* モバイル専用表示 */
+  .mobile-only {
+    display: flex !important;
+  }
+
   .main-content {
     flex-direction: column;
   }
   
-  .sidebar {
-    width: 100%;
+  /* サイドバーをドロワーに */
+  .sidebar.drawer {
+    position: fixed;
+    top: 44px; /* ヘッダーの下に配置（概算） */
+    bottom: 0;
+    width: 80vw;
+    max-width: 320px;
     height: auto;
-    max-height: 300px;
+    overflow-y: auto;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    z-index: 1200;
+    transform: translateX(-110%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .right-sidebar.drawer {
+    right: 0;
+    left: auto;
+    transform: translateX(110%);
+  }
+  .left-sidebar.drawer {
+    left: 0;
+  }
+  .drawer.open.left-sidebar {
+    transform: translateX(0);
+  }
+  .drawer.open.right-sidebar {
+    transform: translateX(0);
+  }
+
+  /* オーバーレイ */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1100;
   }
   
   .left-sidebar,
@@ -408,11 +456,28 @@ body {
   .scene-grid,
   .character-grid,
   .bubble-types {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .export-buttons {
     flex-direction: row;
+  }
+
+  /* キャンバスを最優先で見せるレイアウト */
+  .canvas-area {
+    padding: 6px;
+    max-height: none;
+    height: calc(100vh - 110px); /* ヘッダー+ページタブぶんの概算 */
+  }
+
+  .control-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .theme-toggle {
+    padding: 0.3rem;
+    font-size: 1rem;
   }
 }
 
@@ -590,5 +655,13 @@ body {
   .control-btn {
     width: 100%;
     justify-content: center;
+  }
+  
+  /* グリッドを1列にして崩れ防止 */
+  .template-grid,
+  .scene-grid,
+  .character-grid,
+  .bubble-types {
+    grid-template-columns: 1fr;
   }
 }
