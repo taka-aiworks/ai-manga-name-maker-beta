@@ -17,6 +17,10 @@ export interface MouseEventHandlers {
   handleCanvasMouseUp: () => void;
   handleCanvasContextMenu: (e: React.MouseEvent<HTMLCanvasElement>) => void;
   handleCanvasDoubleClick: (e: React.MouseEvent<HTMLCanvasElement>) => void;
+  // 🆕 タッチ（長押し）対応
+  handleCanvasTouchStart: (e: React.TouchEvent<HTMLCanvasElement>) => void;
+  handleCanvasTouchMove: (e: React.TouchEvent<HTMLCanvasElement>) => void;
+  handleCanvasTouchEnd: (e: React.TouchEvent<HTMLCanvasElement>) => void;
 }
 
 export interface MouseEventHookProps {
@@ -274,6 +278,15 @@ export const useMouseEvents = ({
 
   // 🔧 修正版 handleCanvasClick - 効果線+トーン追加（優先順位調整）
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if ((e as any).nativeEvent && (e as any).nativeEvent.type === 'touchend') {
+      // React合成経由のタッチ由来クリックが入る場合の保護
+      return;
+    }
+    if (suppressNextClick) {
+      suppressNextClick = false;
+      e.preventDefault();
+      return;
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -1197,16 +1210,13 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
     // コンソールログは無効化
   };
 
-  const handleCanvasContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    
+  const openContextMenuAt = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const mouseX = clientX - rect.left;
+    const mouseY = clientY - rect.top;
 
-    // 座標変換を適用
     const { x, y } = convertMouseToCanvasCoordinates(mouseX, mouseY);
 
     // 右クリックメニューでも優先順位を調整（効果線+トーン追加）
@@ -1215,8 +1225,8 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
     if (clickedBubble) {
       setContextMenu({
         visible: true,
-        x: e.clientX,
-        y: e.clientY,
+        x: clientX,
+        y: clientY,
         target: 'bubble',
         targetElement: clickedBubble,
       });
@@ -1228,8 +1238,8 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
     if (clickedCharacter) {
       setContextMenu({
         visible: true,
-        x: e.clientX,
-        y: e.clientY,
+        x: clientX,
+        y: clientY,
         target: 'character',
         targetElement: clickedCharacter,
       });
@@ -1242,8 +1252,8 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
       if (clickedEffect) {
         setContextMenu({
           visible: true,
-          x: e.clientX,
-          y: e.clientY,
+          x: clientX,
+          y: clientY,
           target: 'effect',
           targetElement: clickedEffect,
         });
@@ -1257,8 +1267,8 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
       if (clickedTone) {
         setContextMenu({
           visible: true,
-          x: e.clientX,
-          y: e.clientY,
+          x: clientX,
+          y: clientY,
           target: 'tone',
           targetElement: clickedTone,
         });
@@ -1271,8 +1281,8 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
     if (clickedPanel) {
       setContextMenu({
         visible: true,
-        x: e.clientX,
-        y: e.clientY,
+        x: clientX,
+        y: clientY,
         target: 'panel',
         targetElement: clickedPanel,
       });
@@ -1285,8 +1295,8 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
       if (clickedBackground) {
         setContextMenu({
           visible: true,
-          x: e.clientX,
-          y: e.clientY,
+          x: clientX,
+          y: clientY,
           target: 'background',
           targetElement: clickedBackground,
         });
@@ -1297,11 +1307,82 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
     // 7. 空白右クリック
     setContextMenu({
       visible: true,
-      x: e.clientX,
-      y: e.clientY,
+      x: clientX,
+      y: clientY,
       target: null,
       targetElement: null,
     });
+  };
+
+  const handleCanvasContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    openContextMenuAt(e.clientX, e.clientY);
+  };
+
+  // 🆕 長押し（ロングプレス）でコンテキストメニュー
+  let longPressTimer: any;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchMoved = false;
+  let hasStartedTouchDrag = false;
+  let suppressNextClick = false;
+
+  const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    touchMoved = false;
+    hasStartedTouchDrag = false;
+    longPressTimer = window.setTimeout(() => {
+      openContextMenuAt(touchStartX, touchStartY);
+      suppressNextClick = true;
+    }, 550);
+  };
+
+  const handleCanvasTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    if (Math.hypot(dx, dy) > 10) {
+      touchMoved = true;
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      // ドラッグ開始（まだ開始していない場合）
+      if (!hasStartedTouchDrag) {
+        const fakeDown: any = { clientX: touchStartX, clientY: touchStartY, preventDefault: () => {} };
+        handleCanvasMouseDown(fakeDown);
+        hasStartedTouchDrag = true;
+        suppressNextClick = true;
+      }
+      // ドラッグ中は座標を更新
+      const fakeMove: any = { clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} };
+      handleCanvasMouseMove(fakeMove);
+    }
+  };
+
+  const handleCanvasTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+    if (hasStartedTouchDrag) {
+      handleCanvasMouseUp();
+      hasStartedTouchDrag = false;
+    }
+  };
+
+  // タッチ由来の擬似クリックを抑止
+  const originalHandleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (suppressNextClick) {
+      suppressNextClick = false;
+      e.preventDefault();
+      return;
+    }
+    // 元の実装を後で差し替えるためのダミー
   };
 
   const handleCanvasDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -1362,5 +1443,8 @@ if (selectedTone && state.isCharacterResizing && state.initialCharacterBounds &&
     handleCanvasMouseUp,
     handleCanvasContextMenu,
     handleCanvasDoubleClick,
+    handleCanvasTouchStart,
+    handleCanvasTouchMove,
+    handleCanvasTouchEnd,
   };
 };

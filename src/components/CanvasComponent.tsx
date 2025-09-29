@@ -794,6 +794,9 @@ const CanvasComponent = forwardRef<HTMLCanvasElement, ExtendedCanvasComponentPro
         onMouseMove={mouseEventHandlers.handleCanvasMouseMove}
         onMouseUp={mouseEventHandlers.handleCanvasMouseUp}
         onMouseLeave={mouseEventHandlers.handleCanvasMouseUp}
+        onTouchStart={mouseEventHandlers.handleCanvasTouchStart}
+        onTouchMove={mouseEventHandlers.handleCanvasTouchMove}
+        onTouchEnd={mouseEventHandlers.handleCanvasTouchEnd}
         style={{
           border: "2px solid #ddd",
           background: "white",
