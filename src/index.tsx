@@ -14,8 +14,12 @@ root.render(
   </React.StrictMode>
 );
 
-// PWA Service Worker登録
-serviceWorkerRegistration.register();
+// PWA Service Worker制御
+if (window.location.hostname === 'localhost' || window.location.hostname === '[::1]' || /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/.test(window.location.hostname)) {
+  serviceWorkerRegistration.register();
+} else {
+  serviceWorkerRegistration.unregister();
+}
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
