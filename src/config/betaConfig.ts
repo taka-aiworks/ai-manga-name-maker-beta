@@ -73,10 +73,10 @@ export const FULL_CONFIG: BetaConfig = {
 };
 
 // 現在の設定（環境変数で切り替え可能）
-// 🔧 一時的にベータ版を有効化（本番では環境変数を使用）
-export const CURRENT_CONFIG: BetaConfig = true // process.env.REACT_APP_BETA_VERSION === 'true' 
+// 🔧 ベータ版設定（本番では環境変数を使用）
+export const CURRENT_CONFIG: BetaConfig = process.env.REACT_APP_BETA_VERSION === 'true' 
   ? BETA_CONFIG 
-  : FULL_CONFIG;
+  : BETA_CONFIG; // ベータ版公開中は常にベータ設定
 
 // 設定チェック用ユーティリティ
 export const BetaUtils = {

@@ -1,46 +1,69 @@
-# Getting Started with Create React App
+# 📖 AI漫画ネームメーカー（ベータ版）
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+AI漫画制作に特化したネーム（漫画の下書き）作成ツールです。
 
-## Available Scripts
+## 🎯 主な機能
 
-In the project directory, you can run:
+### ✨ キャラクター作成・編集
+- **8カテゴリ詳細設定**: 基本4項目 + 拡張4項目
+- **多様な表情・アクション**: 豊富なプリセット
+- **新しいviewType**: close_up_face, chest_up, three_quarters対応
+- **AI生成最適化**: 高品質プロンプト自動生成
 
-### `npm start`
+### 🎨 ネーム作成
+- **直感的なドラッグ&ドロップ**: キャラクター配置
+- **背景テンプレート**: シーン別背景自動適用
+- **エフェクト・トーン**: 演出効果の追加
+- **パネル管理**: コマ割り・レイアウト調整
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 📤 エクスポート機能
+- **PDF出力**: 印刷用高品質PDF
+- **PNG出力**: 画像ファイル出力
+- **PSD出力**: Photoshop編集用
+- **NanoBanana出力**: AI漫画生成用パッケージ
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 🧪 ベータ版について
 
-### `npm test`
+**現在ベータ版を公開中です！**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### ベータ版の特徴
+- **無料利用**: 完全無料で全機能利用可能
+- **1ページ制限**: 1ページのみ作成可能
+- **フィードバック収集中**: ご意見・ご要望をお聞かせください
 
-### `npm run build`
+### フル版との違い
+- **複数ページ**: フル版では複数ページ対応
+- **商用利用**: フル版では商用利用可能
+- **優先サポート**: フル版では優先的なサポート
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🚀 使い方
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1. インストール
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. 開発サーバー起動
+```bash
+npm start
+```
 
-### `npm run eject`
+### 3. ブラウザで開く
+[http://localhost:3000](http://localhost:3000) でアプリケーションが開きます
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## 📝 スクリプト
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `npm start`: 開発サーバー起動
+- `npm run build`: 本番用ビルド
+- `npm test`: テスト実行
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 🤝 フィードバック
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+ベータ版のご意見・ご要望は以下からお送りください：
+- アプリ内の「🧪 フィードバック」ボタンから
+- または直接Googleフォームから
 
-## Learn More
+## 📄 ライセンス
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+ベータ版は無料でご利用いただけます。
+商用利用についてはお問い合わせください。
