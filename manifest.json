@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "AI漫画ネームメーカー",
+  "name": "AI漫画ネームメーカー（ベータ版）",
+  "description": "AI漫画制作に特化したネーム（漫画の下書き）作成ツール",
   "icons": [
     {
       "src": "favicon.ico",
@@ -21,5 +22,9 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ja",
+  "categories": ["design", "productivity", "utilities"]
 }
