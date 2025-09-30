@@ -20,6 +20,7 @@ import { usePageManager } from './hooks/usePageManager';
 import { SceneTemplatePanel } from './components/UI/SceneTemplatePanel';
 import PanelTemplateSelector from './components/UI/PanelTemplateSelector';
 import { PaperSizeSelectPanel } from './components/UI/PaperSizeSelectPanel';
+import AiAutoLayoutModal from './components/UI/AiAutoLayoutModal';
 import SnapSettingsPanel from './components/UI/SnapSettingsPanel';
 import { SimpleFeedbackPanel } from './components/UI/SimpleFeedbackPanel';
 import { CURRENT_CONFIG, BetaUtils } from './config/betaConfig';
@@ -82,6 +83,7 @@ function App() {
 
   // 🧪 ベータ版フィードバック機能
   const [showFeedbackPanel, setShowFeedbackPanel] = useState<boolean>(false);
+  const [showAiModal, setShowAiModal] = useState<boolean>(false);
 
   // スナップ設定の状態管理
   const [snapSettings, setSnapSettings] = useState<SnapSettings>({
@@ -980,6 +982,16 @@ function App() {
               🧪 フィードバック
             </button>
           )}
+
+          {/* AI自動配置（MVP入口） */}
+          <button 
+            className="control-btn"
+            onClick={() => setShowAiModal(true)}
+            title="AIでコマ割りと初期配置を提案"
+            style={{ marginLeft: 8 }}
+          >
+            ⚙️ AIで自動配置
+          </button>
         </div>
       </header>
 
@@ -1391,6 +1403,18 @@ function App() {
         onClose={() => setShowPanelSelector(false)}
         isDarkMode={isDarkMode}
         isVisible={showPanelSelector}
+      />
+
+      {/* AI自動配置モーダル */}
+      <AiAutoLayoutModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        existingCharacters={Object.values(characterNames)}
+        onApply={({ templateId }) => {
+          if (templateId && (templates as any)[templateId]) {
+            handleTemplateClick(templateId);
+          }
+        }}
       />
 
       {/* 🧪 ベータ版フィードバックパネル */}
