@@ -424,3 +424,35 @@ REACT_APP_AI_RATE_MAX_PER_WINDOW=1
 ### ロギング/KPI
 - 実行数・成功率・超過率・再提案率
 - プラン別利用分布・上限到達時のコンバージョン
+
+---
+
+## 🌐 AI API デプロイ状況（Vercel）と接続手順
+
+### エンドポイント（Production）
+- Base: https://ai-manga-name-maker-beta.vercel.app
+- Layout API: https://ai-manga-name-maker-beta.vercel.app/api/ai-layout
+
+### 使い方（フロント）
+1) `.env` に設定
+```
+REACT_APP_AI_ENDPOINT=https://ai-manga-name-maker-beta.vercel.app/api/ai-layout
+```
+2) デプロイ
+```
+npm run build
+npm run deploy
+```
+
+### ヘルス/テスト
+- GET /api/ai-layout → 200 `{ ok: true, endpoint, method }`
+- POST /api/ai-layout（例）
+```
+{ "sceneBrief": "放課後に告白するが…", "characters": ["主人公","ヒロイン"] }
+```
+→ 200 `{ "templateId": "reverse_t|triple|quad", "rationale": "heuristic-fallback" }`
+
+### 実装メモ
+- Vercel Functions（CommonJS）: `api/ai-layout.js`
+- CORS許可済み（POST/OPTIONS/GET）。OpenAI連携は今後サーバ側に追加。
+- フロントは `src/services/AiLayoutService.ts` から `REACT_APP_AI_ENDPOINT` を参照。
