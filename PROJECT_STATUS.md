@@ -315,3 +315,112 @@ src/
 - **ベータ版**: フィードバック収集後、非公開予定
 - **フル版**: 商用展開・有料版として活用予定
 - **混同注意**: フォルダ名で区別すること
+
+---
+
+## 🧠 AI自動配置（新機能 仕様・ステータス）
+
+### 概要（MVP）
+- 入力: シーン説明（必須・1〜2文）、登場キャラ（任意）
+- 出力: 最適テンプレ選定＋初期配置（キャラ/吹き出し/背景/効果）をJSONで受け取り、キャンバスに適用（Undo対応）
+- 提案: 最大3案プレビュー、再提案可。失敗時は標準4コマにフォールバック。
+
+### 方式（ハイブリッド）
+- 既存テンプレート（ローカル資産）を土台とし、AIは「候補テンプレIDから選択＋初期配置のみ」を返す。
+
+### JSONスキーマ（要旨）
+```
+{
+  templateId: string, // 既存IDのみ
+  panels: [
+    {
+      characters: [{ type, x, y, scale, faceDirection?, emotion? }],
+      bubbles:    [{ type, speaker, text?, x, y, width, height }],
+      backgrounds:[{ type|prompt, x, y, width, height, opacity? }],
+      effects?:   [{ type, intensity?, angle?, x, y, width, height }]
+    }
+  ],
+  alternates?: [{ templateId, shortReason }],
+  rationale: string
+}
+```
+
+### セリフ扱い
+- 既定: AIが短い仮セリフを自動生成（1吹き出し最大30字、1コマ最大2つ）
+- 任意: 「セリフなし/自分で入れる」を選択可能。適用後はダブルクリックで編集、セリフだけ再提案も可。
+
+### 実行環境
+- 推奨: サーバレス中継（APIキー秘匿・レート制御）。モデル: OpenAI o3-mini / o4-mini 等。
+
+### 進捗
+- 仕様確定（本ドキュメント）。UI案確定（モーダル2ステップ＋詳細オプション）。実装前。
+
+---
+
+## 💳 無料版 / 有料版 取り扱い（統合方針）
+
+### 共通コードでの出し分け
+- `src/edition.ts` にフラグと上限を集約。
+  - `EDITION` / `IS_PRO` / `MAX_PAGES` / `ENABLE_SEO` / `MOBILE_COMPACT`
+- ページ上限は `MAX_PAGES` を参照（Freeの既定=10、Proの既定=1000）。
+
+### 即時切替（再デプロイ不要）
+- 優先順: URL `?maxPages=9999` > `localStorage.max_pages_override` > `.env` の `REACT_APP_MAX_PAGES`。
+
+### 環境変数（例）
+- Free `.env`:
+  - `REACT_APP_EDITION=free`
+  - `REACT_APP_MAX_PAGES=10`
+  - `REACT_APP_ENABLE_SEO=true`
+  - `REACT_APP_MOBILE_COMPACT=true`
+- Pro `.env`:
+  - `REACT_APP_EDITION=pro`
+  - `REACT_APP_MAX_PAGES=1000`
+  - `REACT_APP_ENABLE_SEO=true`
+  - `REACT_APP_MOBILE_COMPACT=true`
+
+### SEO/モバイルの統合
+- `ENABLE_SEO` が true の場合に `document.title`/`meta`（description/OG）を上書き。
+- `<html>` に `edition-pro|edition-free` と `mobile-compact` クラスを付与し、CSSで差分対応。
+
+### 運用
+- 本レポを大元として開発。Free/Pro は `.env` だけで切替可能。
+
+---
+
+## ⏳ AI API使用制限（Free/Pro）
+
+### 推奨ポリシー（初期値）
+- Free: 3回/日・10回/月
+- Pro: 20回/日・200回/月（上位: 40回/日・500回/月プランも想定）
+- レート制限: 1ユーザーあたり 1 req / 10秒（バースト防止）
+- 例外: 管理オーバーライド/キャンペーン枠を別カウンタで合算
+
+### 制御仕様
+- カウンタ: `dailyCount`, `monthlyCount` をUTC 0:00で自動リセット
+- 検証: サーバ側中継で必須（JWT/セッションでユーザー特定）
+- レスポンスヘッダ（例）: `X-Usage-Remaining-Day`, `X-Usage-Remaining-Month`
+
+### 超過時の挙動
+- 日次超過: HTTP 429（Too Many Requests）+ 「明日0:00 UTCにリセット」
+- 月次超過: HTTP 402/403（支払い必要/権限なし）+ Pro案内CTA
+- レート超過: HTTP 429（数秒後に再試行）
+- 失敗（タイムアウト等）: カウントに含めない or 同ウィンドウ1回に限り再試行無料
+
+### クライアントUX
+- 残回数表示: 「残り 今日 2/3・今月 7/10」
+- 上限到達時: スナックバー/モーダルで案内＋アップグレード導線
+
+### 設定（環境変数例）
+```
+REACT_APP_AI_DAILY_CAP_FREE=3
+REACT_APP_AI_MONTHLY_CAP_FREE=10
+REACT_APP_AI_DAILY_CAP_PRO=20
+REACT_APP_AI_MONTHLY_CAP_PRO=200
+REACT_APP_AI_RATE_WINDOW_SEC=10
+REACT_APP_AI_RATE_MAX_PER_WINDOW=1
+```
+
+### ロギング/KPI
+- 実行数・成功率・超過率・再提案率
+- プラン別利用分布・上限到達時のコンバージョン

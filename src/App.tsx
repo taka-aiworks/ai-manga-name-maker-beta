@@ -23,6 +23,7 @@ import { PaperSizeSelectPanel } from './components/UI/PaperSizeSelectPanel';
 import SnapSettingsPanel from './components/UI/SnapSettingsPanel';
 import { SimpleFeedbackPanel } from './components/UI/SimpleFeedbackPanel';
 import { CURRENT_CONFIG, BetaUtils } from './config/betaConfig';
+import { EDITION, IS_PRO, ENABLE_SEO, MOBILE_COMPACT } from './edition';
 
 import {
   calculateScaleTransform,
@@ -94,6 +95,38 @@ function App() {
   useEffect(() => {
     // コンソールログは無効化
     document.documentElement.setAttribute("data-theme", "dark");
+  }, []);
+
+  // Edition/Mobile flags → HTMLクラス・SEO設定
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('edition-pro', IS_PRO);
+    root.classList.toggle('edition-free', !IS_PRO);
+    root.classList.toggle('mobile-compact', MOBILE_COMPACT);
+
+    if (ENABLE_SEO) {
+      const title = `AI漫画ネームメーカー${IS_PRO ? '（Pro）' : '（Free）'}`;
+      if (document.title !== title) document.title = title;
+
+      const ensureMeta = (name: string, attr: 'name' | 'property' = 'name') => {
+        let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
+        if (!el) {
+          el = document.createElement('meta');
+          el.setAttribute(attr, name);
+          document.head.appendChild(el);
+        }
+        return el;
+      };
+
+      // 基本的なSEOタグの上書き
+      const desc = ensureMeta('description');
+      desc.setAttribute('content', 'AI漫画のネーム作成を効率化。テンプレとプロンプトで素早く構成し、出力まで一気通貫。');
+
+      const ogTitle = ensureMeta('og:title', 'property');
+      ogTitle.setAttribute('content', 'AI漫画ネームメーカー');
+      const ogDesc = ensureMeta('og:description', 'property');
+      ogDesc.setAttribute('content', 'ネーム→プロンプト→生成の流れを効率化');
+    }
   }, []);
 
   // 🔧 最適化4: 初回テンプレート適用の最適化（重複削除・シンプル化）

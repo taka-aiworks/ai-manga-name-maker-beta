@@ -12,6 +12,7 @@ import {
   UsePageManagerReturn 
 } from '../types';
 import { BetaUtils } from '../config/betaConfig';
+import { MAX_PAGES, IS_PRO } from '../edition';
 
 interface UsePageManagerProps {
   // 現在の単一ページデータ（既存システムから）
@@ -70,9 +71,11 @@ export const usePageManager = (props: UsePageManagerProps): UsePageManagerReturn
 
   // ページ追加
   const addPage = useCallback(() => {
-    // 🔒 ベータ版制限: ページ数制限チェック
-    if (!BetaUtils.canAddPage(pages.length)) {
-      alert('ベータ版では1ページのみ作成できます。\nフル版では複数ページが利用可能です！');
+    // 🔒 ページ数制限（Edition/Override対応）
+    if (pages.length >= MAX_PAGES) {
+      if (!IS_PRO) {
+        alert('無料版のページ上限に達しました。\nPro版ではページ数の上限が拡張されます。');
+      }
       return;
     }
 
