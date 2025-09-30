@@ -1,27 +1,44 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
 // Simple CORS helper (allow cross-origin POST from GitHub Pages)
-const corsHeaders = {
+const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-};
+} as const;
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+function setCors(res: any) {
+  res.setHeader('Access-Control-Allow-Origin', CORS['Access-Control-Allow-Origin']);
+  res.setHeader('Access-Control-Allow-Methods', CORS['Access-Control-Allow-Methods']);
+  res.setHeader('Access-Control-Allow-Headers', CORS['Access-Control-Allow-Headers']);
+}
+
+export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Cache-Control', 'max-age=86400');
-    return res.status(204).setHeaders(corsHeaders as any).send('');
+    setCors(res);
+    return res.status(204).send('');
+  }
+
+  if (req.method === 'GET') {
+    // Helpful ping for browser open
+    setCors(res);
+    return res.status(200).json({ ok: true, endpoint: '/api/ai-layout', method: 'POST', usage: 'POST JSON { sceneBrief, characters[] }' });
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).setHeaders(corsHeaders as any).json({ error: 'Method Not Allowed' });
+    setCors(res);
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const { sceneBrief, characters, options, candidateTemplateIds } = (req.body || {});
+    let bodyData: any = req.body;
+    if (!bodyData || typeof bodyData === 'string') {
+      try { bodyData = JSON.parse(req.body || '{}'); } catch { bodyData = {}; }
+    }
+    const { sceneBrief, characters, options, candidateTemplateIds } = (bodyData || {});
 
     if (!sceneBrief || typeof sceneBrief !== 'string') {
-      return res.status(400).setHeaders(corsHeaders as any).json({ error: 'sceneBrief is required' });
+      setCors(res);
+      return res.status(400).json({ error: 'sceneBrief is required' });
     }
 
     // Heuristic fallback (no OpenAI call yet): choose templateId by brief length / characters size
@@ -49,9 +66,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       rationale: 'heuristic-fallback',
     };
 
-    return res.status(200).setHeaders(corsHeaders as any).json(body);
+    setCors(res);
+    return res.status(200).json(body);
   } catch (err: any) {
-    return res.status(500).setHeaders(corsHeaders as any).json({ error: 'Internal Error', detail: String(err?.message || err) });
+    setCors(res);
+    return res.status(500).json({ error: 'Internal Error', detail: String(err?.message || err) });
   }
 }
 
