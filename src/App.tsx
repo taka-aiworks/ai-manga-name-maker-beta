@@ -983,14 +983,19 @@ function App() {
             </button>
           )}
 
-          {/* AI自動配置（MVP入口） */}
+          {/* AI配置アシスト（選択テンプレ適用済み限定） */}
           <button 
             className="control-btn"
             onClick={() => setShowAiModal(true)}
-            title="AIでコマ割りと初期配置を提案"
-            style={{ marginLeft: 8 }}
+            disabled={!selectedTemplate || panels.length === 0}
+            title="選択中のコマ割りでAI配置を提案"
+            style={{ 
+              marginLeft: 8,
+              background: selectedTemplate && panels.length > 0 ? 'var(--success-color)' : 'var(--bg-tertiary)',
+              color: selectedTemplate && panels.length > 0 ? '#fff' : 'var(--text-muted)'
+            }}
           >
-            ⚙️ AIで自動配置
+            🤖 AI配置
           </button>
         </div>
       </header>
@@ -1405,15 +1410,91 @@ function App() {
         isVisible={showPanelSelector}
       />
 
-      {/* AI自動配置モーダル */}
+      {/* AI配置アシストモーダル */}
       <AiAutoLayoutModal
         isOpen={showAiModal}
         onClose={() => setShowAiModal(false)}
         existingCharacters={Object.values(characterNames)}
-        onApply={({ templateId }) => {
-          if (templateId && (templates as any)[templateId]) {
-            handleTemplateClick(templateId);
+        selectedTemplateId={selectedTemplate}
+        panelCount={panels.length}
+        onApply={(result) => {
+          console.log('🤖 AI配置提案を受信:', result);
+          
+          if (!result.panels || !Array.isArray(result.panels)) {
+            alert('配置データが不正です');
+            return;
           }
+
+          // Apply placement data to canvas
+          const newCharacters = [];
+          const newBubbles = [];
+          const newBackgrounds = [];
+
+          result.panels.forEach((panelData, panelIndex) => {
+            const panel = panels[panelIndex];
+            if (!panel) return;
+
+            // Characters
+            if (Array.isArray(panelData.characters)) {
+              panelData.characters.forEach((char, charIdx) => {
+                const charId = `char_ai_${Date.now()}_${panelIndex}_${charIdx}`;
+                newCharacters.push({
+                  id: charId,
+                  type: char.type || 'character_1',
+                  name: characterNames[char.type] || 'キャラクター',
+                  x: panel.x + (char.x || 0.5) * panel.width,
+                  y: panel.y + (char.y || 0.5) * panel.height,
+                  scale: char.scale || 1.0,
+                  rotation: 0,
+                  panelId: panel.id,
+                  isGlobalPosition: false
+                });
+              });
+            }
+
+            // Bubbles
+            if (Array.isArray(panelData.bubbles)) {
+              panelData.bubbles.forEach((bubble, bubIdx) => {
+                const bubbleId = `bubble_ai_${Date.now()}_${panelIndex}_${bubIdx}`;
+                newBubbles.push({
+                  id: bubbleId,
+                  type: bubble.type || 'normal',
+                  text: bubble.text || 'セリフ',
+                  x: panel.x + (bubble.x || 0.5) * panel.width,
+                  y: panel.y + (bubble.y || 0.3) * panel.height,
+                  width: (bubble.width || 0.3) * panel.width,
+                  height: (bubble.height || 0.1) * panel.height,
+                  panelId: panel.id,
+                  isGlobalPosition: false
+                });
+              });
+            }
+
+            // Backgrounds
+            if (Array.isArray(panelData.backgrounds)) {
+              panelData.backgrounds.forEach((bg, bgIdx) => {
+                const bgId = `bg_ai_${Date.now()}_${panelIndex}_${bgIdx}`;
+                newBackgrounds.push({
+                  id: bgId,
+                  type: bg.type || 'gradient_v',
+                  name: bg.type || 'AI背景',
+                  x: bg.x || 0,
+                  y: bg.y || 0,
+                  width: bg.width || 1,
+                  height: bg.height || 1,
+                  opacity: bg.opacity || 0.3,
+                  panelId: panel.id
+                });
+              });
+            }
+          });
+
+          // Apply to state (append to existing)
+          setCharacters(prev => [...prev, ...newCharacters]);
+          setSpeechBubbles(prev => [...prev, ...newBubbles]);
+          setBackgrounds(prev => [...prev, ...newBackgrounds]);
+
+          console.log(`✅ AI配置適用完了: キャラ${newCharacters.length}・吹き出し${newBubbles.length}・背景${newBackgrounds.length}`);
         }}
       />
 

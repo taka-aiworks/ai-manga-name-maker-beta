@@ -33,27 +33,60 @@ module.exports = async (req, res) => {
     const sceneBrief = typeof data.sceneBrief === 'string' ? data.sceneBrief : '';
     const characters = Array.isArray(data.characters) ? data.characters : [];
     const options = data.options || {};
-    const candidateTemplateIds = Array.isArray(data.candidateTemplateIds) ? data.candidateTemplateIds : null;
+    const templateId = typeof options.templateId === 'string' ? options.templateId : 'reverse_t';
+    const panelBriefs = Array.isArray(options.panelBriefs) ? options.panelBriefs : [];
 
     if (!sceneBrief) {
       return res.status(400).json({ error: 'sceneBrief is required' });
     }
 
-    const charCount = characters.length;
-    const len = sceneBrief.length;
+    // Heuristic placement: build minimal panels[] with characters/bubbles/backgrounds
+    const panelCount = Math.max(panelBriefs.length, 2); // use panelBriefs length or default 2-4
+    const panels = [];
 
-    const pickByPanels = (n) => (n <= 2 ? 'reverse_t' : n === 3 ? 'triple' : 'quad');
-    let templateId;
-    if (typeof options.desiredPanels === 'number') templateId = pickByPanels(options.desiredPanels);
-    else if (charCount >= 3 || len > 120) templateId = 'quad';
-    else if (len > 60) templateId = 'triple';
-    else templateId = 'reverse_t';
+    for (let i = 0; i < panelCount; i++) {
+      const panelBrief = panelBriefs[i] || '';
+      const isFirstPanel = i === 0;
+      const isLastPanel = i === panelCount - 1;
 
-    if (candidateTemplateIds && !candidateTemplateIds.includes(templateId)) {
-      templateId = candidateTemplateIds[0];
+      // Simple heuristic: place 1-2 characters per panel
+      const panelChars = [];
+      if (characters.length > 0) {
+        const charType = characters[Math.min(i % characters.length, characters.length - 1)] || characters[0];
+        panelChars.push({
+          type: `character_${(i % 4) + 1}`, // cycle character_1..4
+          x: 0.3 + (i % 2) * 0.2, // alternate left/center/right
+          y: 0.4,
+          scale: 1.0,
+          faceDirection: i % 2 === 0 ? 'right' : 'left',
+          emotion: isLastPanel ? 'surprised' : isFirstPanel ? 'neutral' : 'happy'
+        });
+      }
+
+      // Simple bubble: 1 per panel, positioned above character
+      const panelBubbles = [];
+      if (panelChars.length > 0) {
+        panelBubbles.push({
+          type: 'normal',
+          speaker: panelChars[0].type,
+          text: panelBrief || `コマ${i+1}のセリフ`,
+          x: panelChars[0].x,
+          y: panelChars[0].y - 0.15,
+          width: 0.3,
+          height: 0.12
+        });
+      }
+
+      // Background: simple gradient/solid
+      const panelBackgrounds = [{
+        type: 'gradient_v',
+        x: 0, y: 0, width: 1, height: 1, opacity: 0.3
+      }];
+
+      panels.push({ characters: panelChars, bubbles: panelBubbles, backgrounds: panelBackgrounds });
     }
 
-    return res.status(200).json({ templateId, rationale: 'heuristic-fallback' });
+    return res.status(200).json({ panels, rationale: 'heuristic-placement' });
   } catch (err) {
     setCors(res);
     return res.status(500).json({ error: 'Internal Error', detail: String(err && err.message || err) });
